@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>COLMEIA — Central de Comando</title>
+<style>
+:root{--bg:#080b10;--p:#0d1219;--p2:#111821;--line:#202a35;--text:#edf1f5;--muted:#7d8997;--gold:#d6a83d;--green:#36d27f;--red:#ef6262;--blue:#55a8ff;--orange:#efa34a}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+body{overflow:hidden}
+.app{display:grid;grid-template-columns:245px 1fr;grid-template-rows:70px 1fr;height:100vh}
+.header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 25px;background:#0a0e14;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:40px;height:40px;border:1px solid #59471f;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#15130c;font-size:21px}
+.brand-title{font-size:18px;font-weight:800;letter-spacing:.1em}
+.brand-sub{margin-top:3px;color:#788392;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
+.system{display:flex;align-items:center;gap:9px;font-size:10px;font-weight:800;letter-spacing:.1em}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(54,210,127,.65)}
+.status-dot.offline{background:var(--red);box-shadow:0 0 12px rgba(239,98,98,.55)}
+.sidebar{background:#090d13;border-right:1px solid var(--line);padding:20px 13px;overflow:auto}
+.menu-title{margin:3px 10px 11px;color:#596574;font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav button{border:0;background:transparent;color:#aeb7c3;text-align:left;padding:11px 12px;border-radius:6px;font-size:12px;cursor:pointer}
+.nav button:hover{background:#121923;color:#fff}
+.nav button.active{background:#171e28;color:#fff;border-left:2px solid var(--gold)}
+.sidebox{margin-top:25px;padding:13px;border:1px solid var(--line);border-radius:7px;background:#0c1118}
+.side-label{color:#5e6a78;font-size:8px;text-transform:uppercase;letter-spacing:.14em}
+.side-value{margin-top:6px;font-size:11px;font-weight:700}
+.main{overflow:auto;padding:25px}
+.page{max-width:1500px;margin:auto}
+.head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px}
+.kicker{color:var(--gold);font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.title{margin-top:5px;font-size:25px;font-weight:750}
+.desc{margin-top:5px;color:var(--muted);font-size:11px}
+.refresh{color:#667281;font-size:10px}
+.master-control{margin-bottom:12px;background:var(--p);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.master-box{padding:16px;display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center}
+.master-title{font-size:13px;font-weight:750}
+.master-desc{margin-top:5px;color:var(--muted);font-size:10px}
+.master-state{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:5px;font-size:9px;font-weight:800;letter-spacing:.08em}
+.master-state .dot{background:var(--green)}
+.master-state .dot.red{background:var(--red)}
+.master-state .dot.orange{background:var(--orange)}
+.master-state .dot.blue{background:var(--blue)}
+.master-actions{display:flex;gap:6px}
+.master-actions button{border:1px solid var(--line);background:#111821;color:#cbd3dc;border-radius:5px;padding:9px 11px;font-size:9px;font-weight:800;letter-spacing:.06em;cursor:pointer}
+.master-actions button:hover{background:#18212c;color:#fff}
+.master-actions button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:1000px){.master-box{grid-template-columns:1fr}.master-actions{justify-content:flex-start}}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:var(--p);border:1px solid var(--line);border-radius:8px;padding:17px}
+.label{color:#6d7987;font-size:8px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.value{margin-top:8px;font-size:25px;font-weight:750}
+.detail{margin-top:6px;color:#667281;font-size:10px}
+.columns{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;margin-top:12px}
+.section{background:var(--p);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.section-head{height:48px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.section-title{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.section-count{color:#647080;font-size:8px;letter-spacing:.1em}
+.hive{padding:17px}
+.hive-main{display:flex;justify-content:space-between;align-items:center}
+.hive-name{font-size:17px;font-weight:750}
+.hive-id{margin-top:4px;color:#697584;font-size:10px}
+.badge{display:flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid #1b4630;background:#0d1e16;border-radius:5px;color:var(--green);font-size:9px;font-weight:800}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.dot.red{background:var(--red)}
+.dot.orange{background:var(--orange)}
+.dot.blue{background:var(--blue)}
+.worker{margin-top:15px;padding-top:14px;border-top:1px solid var(--line)}
+.worker-head{display:flex;justify-content:space-between}
+.worker-name{font-size:12px;font-weight:700}
+.worker-role{margin-top:4px;color:#687585;font-size:9px}
+.worker-status{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700}
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}
+.meta{padding:9px;background:#090e14;border:1px solid #1a232e;border-radius:5px}
+.meta-label{color:#5d6977;font-size:7px;text-transform:uppercase}
+.meta-value{margin-top:4px;color:#d0d7df;font-size:10px}
+.list{max-height:330px;overflow:auto}
+.row{padding:12px 16px;border-bottom:1px solid #181f28}
+.row:last-child{border-bottom:0}
+.row-top{display:flex;justify-content:space-between;gap:12px}
+.row-title{font-size:11px;font-weight:650}
+.row-sub{margin-top:5px;color:#687482;font-size:9px}
+.state{font-size:8px;font-weight:800;letter-spacing:.06em;white-space:nowrap}
+.state.ok{color:var(--green)}
+.state.wait{color:var(--orange)}
+.state.fail{color:var(--red)}
+.state.run{color:var(--blue)}
+.empty{padding:25px;text-align:center;color:#647080;font-size:10px}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}.columns{grid-template-columns:1fr}}
+@media(max-width:700px){body{overflow:auto}.app{display:block;height:auto;min-height:100vh}.header{height:66px}.sidebar{border-right:0;border-bottom:1px solid var(--line)}.nav{display:grid;grid-template-columns:repeat(2,1fr)}.main{padding:15px}.cards{grid-template-columns:1fr}.meta-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="header">
+<div class="brand">
+<div class="logo">🐝</div>
+<div>
+<div class="brand-title">COLMEIA</div>
+<div class="brand-sub">Central de Inteligência e Preservação Histórica</div>
+</div>
+</div>
+<div class="system"><span id="systemDot" class="status-dot"></span><span id="systemStatus">VERIFICANDO</span></div>
+</header>
+
+<aside class="sidebar">
+<div class="menu-title">Comando</div>
+<div class="nav">
+<button class="active">▸ Visão geral</button>
+<button type="button" onclick="window.location.href='/panel/globe-ui'">▸ 🌎 Globo Real</button>
+<button type="button" onclick="window.location.href='/panel/favo-ui'">▸ 🍯 Favo Real</button>
+<button type="button" onclick="window.location.href='/panel/missions-ui'">▸ Missões</button>
+<button type="button" onclick="window.location.href='/panel/batedores-ui'">▸ Batedores</button>
+<button type="button" onclick="window.location.href='/panel/agentes-ui'">▸ Agentes</button>
+<button type="button" onclick="window.location.href='/panel/arquivos-ui'">▸ Arquivos</button>
+<button type="button" onclick="window.location.href='/panel/eventos-ui'">▸ Eventos</button>
+<button type="button" onclick="window.location.href='/panel/quarentena-ui'">▸ Quarentena</button>
+<button type="button" onclick="window.location.href='/panel/auditoria-ui'">▸ Auditoria</button>
+</div>
+<div class="sidebox">
+<div class="side-label">Núcleo operacional</div>
+<div class="side-value">RAINHA-001</div>
+</div>
+</aside>
+
+<main class="main">
+<div class="page">
+
+<div class="head">
+<div>
+<div class="kicker">Visão operacional</div>
+<div class="title">Central de Comando</div>
+<div class="desc">Estado real da Colmeia, agentes, missões e atividade operacional.</div>
+</div>
+<div class="refresh" id="refresh">Atualizando...</div>
+</div>
+
+<section class="master-control">
+<div class="section-head">
+<div class="section-title">MESTRE / APICULTOR</div>
+<div class="section-count">COMANDO HUMANO</div>
+</div>
+<div class="master-box">
+<div>
+<div class="master-title">Controle da Colmeia</div>
+<div class="master-desc">O estado abaixo deverá refletir exclusivamente o estado real registrado no Core.</div>
+</div>
+<div class="master-state">
+<span class="dot"></span>
+<span id="masterHiveState">VERIFICANDO</span>
+</div>
+<div class="master-actions">
+<button type="button" id="btnHiveActive">ATIVAR</button>
+<button type="button" id="btnHivePause">PAUSAR</button>
+<button type="button" id="btnHiveSleep">DORMIR</button>
+</div>
+</div>
+</section>
+
+<section class="cards">
+<div class="card"><div class="label">Colmeia</div><div class="value" id="hiveState">—</div><div class="detail" id="hiveName">Carregando...</div></div>
+<div class="card"><div class="label">Missões</div><div class="value" id="missionTotal">—</div><div class="detail">Total registrado</div></div>
+<div class="card"><div class="label">Em execução</div><div class="value" id="missionRunning">—</div><div class="detail">Execuções registradas</div></div>
+<div class="card"><div class="label">Eventos</div><div class="value" id="eventTotal">—</div><div class="detail">Eventos registrados</div></div>
+</section>
+
+<section class="columns">
+
+<div class="section">
+<div class="section-head"><div class="section-title">Estado operacional</div><div class="section-count">DADOS REAIS</div></div>
+<div class="hive">
+
+<div class="hive-main">
+<div><div class="hive-name" id="hiveTitle">Carregando...</div><div class="hive-id" id="hiveIdentifier">—</div></div>
+<div class="badge"><span class="dot"></span><span id="hiveBadge">—</span></div>
+</div>
+
+<div class="worker">
+<div class="worker-head">
+<div><div class="worker-name" id="workerName">Carregando...</div><div class="worker-role" id="workerRole">—</div></div>
+<div class="worker-status"><span id="workerDot" class="dot"></span><span id="workerStatus">—</span></div>
+</div>
+
+<div class="meta-grid">
+<div class="meta"><div class="meta-label">Worker ID</div><div class="meta-value" id="workerId">—</div></div>
+<div class="meta"><div class="meta-label">Host</div><div class="meta-value" id="workerHost">—</div></div>
+<div class="meta"><div class="meta-label">IP</div><div class="meta-value" id="workerIp">—</div></div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="section">
+<div class="section-head"><div class="section-title">Atividade operacional</div><div class="section-count" id="eventCount">—</div></div>
+<div class="list" id="events"><div class="empty">Carregando eventos...</div></div>
+</div>
+
+</section>
+
+<section class="section" style="margin-top:12px">
+<div class="section-head"><div class="section-title">Missões recentes</div><div class="section-count" id="missionCount">—</div></div>
+<div class="list" id="missions"><div class="empty">Carregando missões...</div></div>
+</section>
+
+</div>
+</main>
+</div>
+
+<script>
+const esc=v=>String(v??"—").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+const stateClass=s=>{s=String(s||"").toUpperCase();if(["CONCLUIDA","ONLINE","ATIVA"].includes(s))return"ok";if(["AUTORIZADA","DORMINDO"].includes(s))return"wait";if(["FALHOU","OFFLINE"].includes(s))return"fail";if(s==="EM_EXECUCAO")return"run";return""};
+const stateText=s=>String(s||"—").replaceAll("_"," ");
+async function get(path){const r=await fetch(path,{cache:"no-store"});if(!r.ok)throw Error(path+" HTTP "+r.status);return r.json()}
+async function update(){
+try{
+const [o,w,m,e]=await Promise.all([get("/panel/overview"),get("/panel/worker/live"),get("/panel/missions"),get("/panel/events")]);
+const hive=o.hive||{};
+const counts=o.counts||o.metrics||{};
+const missions=Array.isArray(m)?m:(m.missions||m.items||[]);
+const events=Array.isArray(e)?e:(e.events||e.items||[]);
+const online=w.status==="ONLINE"||w.worker_status==="online";
+
+document.getElementById("systemStatus").textContent=online?"SISTEMA ONLINE":"SISTEMA OFFLINE";
+document.getElementById("systemDot").classList.toggle("offline",!online);
+
+document.getElementById("hiveState").textContent=stateText(hive.state);
+document.getElementById("hiveName").textContent=hive.name||"—";
+document.getElementById("hiveTitle").textContent=hive.name||"—";
+document.getElementById("hiveIdentifier").textContent=hive.identifier||hive.id||"—";
+document.getElementById("hiveBadge").textContent=stateText(hive.state);
+
+const masterState=document.getElementById("masterHiveState");
+const masterDot=document.querySelector(".master-state .dot");
+if(masterState) masterState.textContent=stateText(hive.state);
+if(masterDot){
+  masterDot.className="dot";
+  const hs=String(hive.state||"").toUpperCase();
+  if(hs==="EMERGENCIA"||hs==="CONTIDA")masterDot.classList.add("red");
+  else if(hs==="PAUSADA"||hs==="DORMINDO")masterDot.classList.add("orange");
+  else if(hs==="ATIVA")masterDot.classList.add("blue");
+}
+
+document.getElementById("missionTotal").textContent=counts.total_missions??m.total??m.count??missions.length;
+document.getElementById("missionRunning").textContent=counts.in_execution??counts.running??0;
+document.getElementById("eventTotal").textContent=counts.total_events??e.total??e.count??events.length;
+
+document.getElementById("workerName").textContent=w.name||"—";
+document.getElementById("workerRole").textContent=w.role||"—";
+document.getElementById("workerId").textContent=w.worker_id||"—";
+document.getElementById("workerHost").textContent=w.hostname||"—";
+document.getElementById("workerIp").textContent=w.ip||"—";
+document.getElementById("workerStatus").textContent=stateText(w.status||w.worker_status);
+document.getElementById("workerDot").className="dot "+stateClass(w.status||w.worker_status);
+
+document.getElementById("eventCount").textContent=events.length+" REGISTRADOS";
+document.getElementById("events").innerHTML=events.length?events.slice(0,8).map(x=>`<div class="row"><div class="row-top"><div class="row-title">${esc(x.message||x.title||"Evento operacional")}</div><div class="state ${stateClass(x.event_type||x.type)}">${esc(stateText(x.event_type||x.type))}</div></div><div class="row-sub">${esc(x.created_at||x.timestamp||x.occurred_at||"")}</div></div>`).join(""):'<div class="empty">Nenhum evento registrado.</div>';
+
+document.getElementById("missionCount").textContent=missions.length+" REGISTRADAS";
+document.getElementById("missions").innerHTML=missions.length?missions.slice(0,10).map(x=>`<div class="row"><div class="row-top"><div><div class="row-title">${esc(x.title||x.name||"Missão sem título")}</div><div class="row-sub">${esc(x.id||x.mission_id||"")}</div></div><div class="state ${stateClass(x.state||x.status)}">${esc(stateText(x.state||x.status))}</div></div></div>`).join(""):'<div class="empty">Nenhuma missão registrada.</div>';
+
+document.getElementById("refresh").textContent="Atualizado às "+new Date().toLocaleTimeString("pt-BR");
+}catch(err){
+console.error(err);
+document.getElementById("systemStatus").textContent="FALHA DE COMUNICAÇÃO";
+document.getElementById("systemDot").classList.add("offline");
+document.getElementById("refresh").textContent="Erro ao consultar API";
+}}
+async function commandHiveState(state){
+  const buttons=document.querySelectorAll(".master-actions button");
+  buttons.forEach(b=>b.disabled=true);
+  try{
+    const r=await fetch("/hive/state/"+encodeURIComponent(state),{
+      method:"POST",
+      cache:"no-store"
+    });
+    const data=await r.json();
+    if(!r.ok || !["CHANGED","NO_CHANGE"].includes(data.status)){
+      throw Error(data.detail||data.status||("HTTP "+r.status));
+    }
+    await update();
+  }catch(err){
+    console.error(err);
+    alert("Comando não executado: "+err.message);
+  }finally{
+    buttons.forEach(b=>b.disabled=false);
+  }
+}
+
+document.getElementById("btnHiveActive").addEventListener("click",()=>commandHiveState("ATIVA"));
+document.getElementById("btnHivePause").addEventListener("click",()=>commandHiveState("PAUSADA"));
+document.getElementById("btnHiveSleep").addEventListener("click",()=>commandHiveState("DORMINDO"));
+
+update();
+setInterval(update,5000);
+</script>
+</body>
+</html>

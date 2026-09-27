@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>COLMEIA — Detalhes da Missão</title>
+<style>
+:root{--bg:#080b10;--p:#0d1219;--line:#202a35;--text:#edf1f5;--muted:#7d8997;--gold:#d6a83d;--green:#36d27f;--red:#ef6262;--blue:#55a8ff;--orange:#efa34a}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+body{padding:25px}.wrap{max-width:1500px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px}
+.kicker{color:var(--gold);font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+h1{margin:5px 0 0;font-size:25px}
+.desc{margin-top:5px;color:var(--muted);font-size:11px}
+.back{border:1px solid var(--line);background:var(--p);color:var(--text);padding:10px 14px;border-radius:6px;text-decoration:none;font-size:11px}
+.back:hover{border-color:var(--gold)}
+.panel{background:var(--p);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.panel-head{min-height:52px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.panel-title{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.state{font-size:9px;font-weight:800;letter-spacing:.06em}
+.ok{color:var(--green)}.wait{color:var(--orange)}.fail{color:var(--red)}.run{color:var(--blue)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.item{background:var(--p);padding:14px 16px}
+.label{color:#687482;font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.value{margin-top:6px;font-size:11px;word-break:break-word}
+.objective{padding:16px;font-size:12px;line-height:1.5}
+.event{padding:14px 16px;border-bottom:1px solid #181f28}
+.event:last-child{border-bottom:0}
+.event-top{display:flex;justify-content:space-between;gap:15px}
+.event-type{font-size:10px;font-weight:800}
+.event-message{margin-top:5px;font-size:11px}
+.event-date{margin-top:5px;color:#687482;font-size:9px}
+.result{margin-top:8px;background:#090e14;border:1px solid #1a232e;border-radius:5px;padding:12px;overflow:auto}
+pre{margin:0;color:#cbd3dc;font:10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}
+.empty{padding:30px;text-align:center;color:#647080;font-size:10px}
+.error{color:var(--red)}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.top{align-items:flex-start;gap:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="top">
+<div>
+<div class="kicker">CENTRAL DE OPERAÇÕES</div>
+<h1 id="title">Carregando missão...</h1>
+<div class="desc">Detalhamento operacional real.</div>
+</div>
+<a class="back" href="/panel/missions-ui">← Missões</a>
+</div>
+
+<div id="content">
+<div class="panel"><div class="empty">Consultando missão na API...</div></div>
+</div>
+
+</div>
+
+<script>
+const esc=v=>String(v??"—")
+ .replaceAll("&","&amp;")
+ .replaceAll("<","&lt;")
+ .replaceAll(">","&gt;")
+ .replaceAll('"',"&quot;")
+ .replaceAll("'","&#039;");
+
+const stateText=s=>String(s||"—").replaceAll("_"," ");
+
+const stateClass=s=>{
+ s=String(s||"").toUpperCase();
+ if(s==="CONCLUIDA")return"ok";
+ if(s==="AUTORIZADA")return"wait";
+ if(s==="FALHOU")return"fail";
+ if(s==="EM_EXECUCAO")return"run";
+ return"";
+};
+
+const params=new URLSearchParams(location.search);
+const missionId=params.get("id");
+
+async function load(){
+ const content=document.getElementById("content");
+
+ if(!missionId){
+   content.innerHTML='<div class="panel"><div class="empty error">ID da missão não informado.</div></div>';
+   return;
+ }
+
+ try{
+   const r=await fetch("/panel/missions/"+encodeURIComponent(missionId),{cache:"no-store"});
+   if(!r.ok)throw Error("HTTP "+r.status);
+
+   const m=await r.json();
+
+   document.getElementById("title").textContent=m.title||m.id||"Missão";
+
+   const events=Array.isArray(m.events)?m.events:[];
+
+   let result=null;
+   for(const ev of events){
+     if(ev.event_type==="CONCLUIDA" && ev.data){
+       result=ev.data;
+     }
+   }
+
+   content.innerHTML=`
+   <div class="panel">
+     <div class="panel-head">
+       <div class="panel-title">Estado da missão</div>
+       <div class="state ${stateClass(m.state)}">${esc(stateText(m.state))}</div>
+     </div>
+
+     <div class="grid">
+       <div class="item"><div class="label">ID</div><div class="value">${esc(m.id)}</div></div>
+       <div class="item"><div class="label">Origem</div><div class="value">${esc(m.origin)}</div></div>
+       <div class="item"><div class="label">Destino</div><div class="value">${esc(m.destination)}</div></div>
+       <div class="item"><div class="label">Fonte</div><div class="value">${esc(m.source)}</div></div>
+       <div class="item"><div class="label">Criada em</div><div class="value">${esc(m.created_at)}</div></div>
+       <div class="item"><div class="label">Iniciada em</div><div class="value">${esc(m.started_at)}</div></div>
+       <div class="item"><div class="label">Concluída em</div><div class="value">${esc(m.completed_at)}</div></div>
+       <div class="item"><div class="label">Worker</div><div class="value">${esc(m.worker?.worker_id||m.destination)}</div></div>
+       <div class="item"><div class="label">Agente</div><div class="value">${esc(m.worker?.name)}</div></div>
+     </div>
+
+     <div class="panel-head"><div class="panel-title">Objetivo</div></div>
+     <div class="objective">${esc(m.objective)}</div>
+   </div>
+
+   ${result ? `
+   <div class="panel">
+     <div class="panel-head">
+       <div class="panel-title">Resultado real da execução</div>
+       <div class="state ok">CONCLUÍDA</div>
+     </div>
+     <div class="result"><pre>${esc(JSON.stringify(result,null,2))}</pre></div>
+   </div>
+   ` : ""}
+
+   <div class="panel">
+     <div class="panel-head">
+       <div class="panel-title">Eventos da execução</div>
+       <div class="state">${events.length} REGISTRADOS</div>
+     </div>
+     ${
+       events.length
+       ? events.map(ev=>`
+         <div class="event">
+           <div class="event-top">
+             <div class="event-type ${stateClass(ev.event_type)}">${esc(stateText(ev.event_type))}</div>
+             <div class="event-date">${esc(ev.created_at)}</div>
+           </div>
+           <div class="event-message">${esc(ev.message)}</div>
+           ${
+             ev.data
+             ? `<div class="result"><pre>${esc(JSON.stringify(ev.data,null,2))}</pre></div>`
+             : ""
+           }
+         </div>`).join("")
+       : '<div class="empty">Nenhum evento registrado.</div>'
+     }
+   </div>
+   `;
+
+ }catch(err){
+   console.error(err);
+   content.innerHTML='<div class="panel"><div class="empty error">Não foi possível consultar os detalhes reais desta missão.</div></div>';
+ }
+}
+
+load();
+</script>
+</body>
+</html>

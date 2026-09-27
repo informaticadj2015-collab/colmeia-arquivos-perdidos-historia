@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COLMEIA — Globo Real</title>
+
+<style>
+:root {
+    --bg: #071016;
+    --panel: #0d171e;
+    --panel2: #101d25;
+    --line: #21333d;
+    --text: #e7f0f4;
+    --muted: #8ea4ae;
+    --accent: #f4b942;
+    --ok: #49d17d;
+    --warn: #f0a83a;
+    --danger: #e05d5d;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.topbar {
+    height: 68px;
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: #09131a;
+    border-bottom: 1px solid var(--line);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.brand-mark {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #5d4b25;
+    background: #17180f;
+    border-radius: 9px;
+    font-size: 21px;
+}
+
+.brand-title {
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    font-size: 15px;
+}
+
+.brand-subtitle {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 2px;
+    letter-spacing: .7px;
+}
+
+.top-status {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.status-live {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ok);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .8px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 10px rgba(73,209,125,.55);
+}
+
+.back {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    border-radius: 7px;
+}
+
+.back:hover {
+    color: var(--text);
+    border-color: #3b5662;
+}
+
+.workspace {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 330px minmax(0, 1fr);
+}
+
+.sidebar {
+    min-height: 0;
+    overflow: auto;
+    border-right: 1px solid var(--line);
+    background: var(--panel);
+    padding: 18px;
+}
+
+.section-title {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    margin: 2px 0 12px;
+}
+
+.metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-bottom: 20px;
+}
+
+.metric {
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.metric-label {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: .6px;
+}
+
+.metric-value {
+    margin-top: 5px;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.real-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.record {
+    border: 1px solid var(--line);
+    background: #0b151c;
+    border-radius: 8px;
+    padding: 11px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+
+.record:hover {
+    border-color: #526a75;
+    background: #101d24;
+}
+
+.record.active {
+    border-color: var(--accent);
+    background: #15180f;
+}
+
+.record-title {
+    font-size: 12px;
+    line-height: 1.35;
+    font-weight: 700;
+}
+
+.record-meta {
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 6px;
+}
+
+.right {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    background:
+        radial-gradient(circle at center, #10222c 0%, #081218 47%, #050b0f 100%);
+}
+
+.globe-stage {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+#globe-container {
+    position: absolute;
+    inset: 0;
+}
+
+#globe-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.globe-loading {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    min-width: 280px;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: rgba(7,16,22,.92);
+    text-align: center;
+    pointer-events: none;
+}
+
+.globe-loading.hidden {
+    display: none;
+}
+
+.loading-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+}
+
+.loading-text {
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.globe-placeholder {
+    width: min(62vh, 620px);
+    height: min(62vh, 620px);
+    max-width: 70%;
+    max-height: 80%;
+    border-radius: 50%;
+    border: 1px solid #314852;
+    background:
+        radial-gradient(circle at 38% 31%, rgba(73,112,126,.24), transparent 28%),
+        radial-gradient(circle at 50% 50%, #10242d 0%, #09151b 55%, #050a0e 100%);
+    box-shadow:
+        0 0 80px rgba(0,0,0,.7),
+        inset -45px -30px 90px rgba(0,0,0,.65),
+        inset 20px 15px 50px rgba(71,130,151,.08);
+    position: relative;
+}
+
+.globe-placeholder::before,
+.globe-placeholder::after {
+    content: "";
+    position: absolute;
+    inset: 8%;
+    border: 1px solid rgba(105,145,157,.14);
+    border-radius: 50%;
+}
+
+.globe-placeholder::after {
+    inset: 20% 38%;
+    border-radius: 50%;
+}
+
+.globe-label {
+    position: absolute;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(5,10,14,.82);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 7px 10px;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: .8px;
+    white-space: nowrap;
+}
+
+.detail {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    width: 330px;
+    max-height: calc(100% - 36px);
+    overflow: auto;
+    background: rgba(9,18,24,.94);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+}
+
+.detail.hidden {
+    display: none;
+}
+
+.detail-title {
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.4;
+    margin-bottom: 14px;
+}
+
+.detail-row {
+    border-top: 1px solid #1b2a32;
+    padding: 9px 0;
+}
+
+.detail-key {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.detail-value {
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.detail a {
+    color: var(--accent);
+}
+
+.real-badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 7px;
+    border-radius: 4px;
+    border: 1px solid #28583d;
+    color: var(--ok);
+    background: #0c1c14;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .7px;
+}
+
+@media (max-width: 900px) {
+    .workspace {
+        grid-template-columns: 260px minmax(0, 1fr);
+    }
+
+    .detail {
+        width: 280px;
+    }
+}
+</style>
+    <script src="https://unpkg.com/globe.gl"></script>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-mark">🐝</div>
+        <div>
+            <div class="brand-title">COLMEIA / GLOBO REAL</div>
+            <div class="brand-subtitle">INTELIGÊNCIA GEOGRÁFICA · EVIDÊNCIA · PROVENIÊNCIA</div>
+        </div>
+    </div>
+
+    <div class="top-status">
+        <div class="status-live">
+            <span class="status-dot"></span>
+            DADOS REAIS
+        </div>
+        <a class="back" href="/panel">← Central</a>
+    </div>
+</header>
+
+<main class="workspace">
+
+    <aside class="sidebar">
+
+        <div class="section-title">REGISTROS GEOGRÁFICOS</div>
+
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-label">REGISTROS</div>
+                <div class="metric-value" id="total">—</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">COM COORDENADAS</div>
+                <div class="metric-value" id="mapped">—</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">SEM COORDENADAS</div>
+                <div class="metric-value" id="unmapped">—</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-label">FONTE</div>
+                <div class="metric-value" id="sources">—</div>
+            </div>
+        </div>
+
+        <div class="section-title">EVIDÊNCIAS LOCALIZADAS</div>
+
+        <div id="records" class="real-list">
+            <div class="record">
+                <div class="record-title">Carregando dados reais…</div>
+                <div class="record-meta">Consultando /panel/globe</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <section class="right">
+
+        <div class="globe-stage">
+            <div id="globe-container"></div>
+
+            <div id="globe-loading" class="globe-loading">
+                <div class="loading-title">CARREGANDO GLOBO</div>
+                <div class="loading-text">Aguardando dados geográficos reais da Colmeia…</div>
+            </div>
+        </div>
+
+        <div id="detail" class="detail hidden"></div>
+
+    </section>
+
+</main>
+
+<script>
+let globeData = [];
+let selectedId = null;
+
+function esc(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function renderMetrics(items) {
+    const mapped = items.filter(x =>
+        Number.isFinite(Number(x.latitude)) &&
+        Number.isFinite(Number(x.longitude))
+    );
+
+    const sourceSet = new Set(
+        items.map(x => x.source_name).filter(Boolean)
+    );
+
+    document.getElementById("total").textContent = items.length;
+    document.getElementById("mapped").textContent = mapped.length;
+    document.getElementById("unmapped").textContent = "—";
+    document.getElementById("sources").textContent = sourceSet.size;
+}
+
+function renderRecords(items) {
+    const root = document.getElementById("records");
+
+    if (!items.length) {
+        root.innerHTML = `
+            <div class="record">
+                <div class="record-title">Nenhum registro geográfico</div>
+                <div class="record-meta">A API não retornou descobertas com coordenadas.</div>
+            </div>
+        `;
+        return;
+    }
+
+    root.innerHTML = items.map(item => `
+        <div class="record ${selectedId === item.id ? "active" : ""}"
+             data-id="${esc(item.id)}">
+            <div class="record-title">${esc(item.title)}</div>
+            <div class="record-meta">
+                ${esc(item.source_name || "Fonte não informada")}
+                · ${Number(item.latitude).toFixed(6)}, ${Number(item.longitude).toFixed(6)}
+            </div>
+        </div>
+    `).join("");
+
+    root.querySelectorAll(".record").forEach(el => {
+        el.addEventListener("click", () => {
+            const item = globeData.find(x => x.id === el.dataset.id);
+            if (item) showDetail(item);
+        });
+    });
+}
+
+function showDetail(item) {
+    selectedId = item.id;
+
+    const detail = document.getElementById("detail");
+
+    detail.innerHTML = `
+        <div class="detail-title">${esc(item.title)}</div>
+
+        <span class="real-badge">REGISTRO REAL DA COLMEIA</span>
+
+        <div class="detail-row">
+            <div class="detail-key">Coordenadas</div>
+            <div class="detail-value">
+                ${Number(item.latitude).toFixed(6)},
+                ${Number(item.longitude).toFixed(6)}
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-key">Fonte</div>
+            <div class="detail-value">${esc(item.source_name)}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-key">Autor</div>
+            <div class="detail-value">${esc(item.author || "Não informado")}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-key">Data do documento</div>
+            <div class="detail-value">${esc(item.document_date || "Não informada")}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-key">Direitos</div>
+            <div class="detail-value">${esc(item.rights || "DESCONHECIDO")}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-key">Licença</div>
+            <div class="detail-value">${esc(item.license_name || "Não informada")}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-key">Atribuição</div>
+            <div class="detail-value">${item.attribution_required ? "Obrigatória" : "Não indicada"}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-key">Proveniência</div>
+            <div class="detail-value">
+                ${item.source_url
+                    ? `<a href="${esc(item.source_url)}" target="_blank" rel="noopener noreferrer">Abrir fonte original</a>`
+                    : "URL não informada"}
+            </div>
+        </div>
+    `;
+
+    detail.classList.remove("hidden");
+    renderRecords(globeData);
+}
+
+function initRealGlobe(items) {
+    const container = document.getElementById("globe-container");
+    const loading = document.getElementById("globe-loading");
+
+    if (typeof Globe !== "function") {
+        throw new Error("Globe.gl não foi carregado pelo navegador");
+    }
+
+    const points = items
+        .filter(item =>
+            Number.isFinite(Number(item.latitude)) &&
+            Number.isFinite(Number(item.longitude))
+        )
+        .map(item => ({
+            ...item,
+            lat: Number(item.latitude),
+            lng: Number(item.longitude),
+            size: 0.65,
+            color: "#f4b942"
+        }));
+
+    const globe = Globe()(container)
+        .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
+        .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
+        .backgroundImageUrl("https://unpkg.com/three-globe/example/img/night-sky.png")
+        .showAtmosphere(true)
+        .atmosphereColor("#4b91ad")
+        .atmosphereAltitude(0.16)
+        .pointsData(points)
+        .pointLat("lat")
+        .pointLng("lng")
+        .pointColor("color")
+        .pointAltitude(0.025)
+        .pointRadius("size")
+        .pointResolution(12)
+        .onPointClick(point => {
+            showDetail(point);
+        })
+        .pointLabel(point => `
+            <div style="
+                background:rgba(5,10,14,.94);
+                border:1px solid #334953;
+                border-radius:6px;
+                padding:8px 10px;
+                color:#e7f0f4;
+                font-family:system-ui,sans-serif;
+                max-width:280px;
+            ">
+                <div style="font-weight:800;font-size:11px;">
+                    ${esc(point.title)}
+                </div>
+                <div style="margin-top:4px;color:#8ea4ae;font-size:9px;">
+                    ${esc(point.source_name || "Fonte não informada")}
+                </div>
+                <div style="margin-top:4px;color:#f4b942;font-size:9px;">
+                    ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}
+                </div>
+            </div>
+        `);
+
+    function resizeGlobe() {
+        globe
+            .width(container.clientWidth)
+            .height(container.clientHeight);
+    }
+
+    resizeGlobe();
+    window.addEventListener("resize", resizeGlobe);
+
+    const controls = globe.controls();
+
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.32;
+    controls.minDistance = 120;
+    controls.maxDistance = 500;
+
+    let manualInteraction = false;
+
+    controls.addEventListener("start", () => {
+        manualInteraction = true;
+        controls.autoRotate = false;
+    });
+
+    controls.addEventListener("end", () => {
+        manualInteraction = false;
+    });
+
+    container.addEventListener("click", event => {
+        if (event.target.closest("canvas")) {
+            controls.autoRotate = !controls.autoRotate;
+        }
+    });
+
+    container.addEventListener("pointerdown", () => {
+        controls.autoRotate = false;
+    });
+
+    container.addEventListener("pointerup", () => {
+        if (!manualInteraction) {
+            controls.autoRotate = false;
+        }
+    });
+
+    globe.pointOfView({
+        lat: -15,
+        lng: -55,
+        altitude: 2.25
+    }, 0);
+
+    loading.classList.add("hidden");
+
+
+    // ============================================================
+window.__colmeiaGlobe = globe;
+}
+
+async function loadGlobeData() {
+    try {
+        const response = await fetch("/panel/globe", {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+
+        if (payload.status !== "OK" || !Array.isArray(payload.items)) {
+            throw new Error("Resposta inválida da API");
+        }
+
+        globeData = payload.items;
+
+        renderMetrics(globeData);
+        renderRecords(globeData);
+        initRealGlobe(globeData);
+
+    } catch (error) {
+        document.getElementById("records").innerHTML = `
+            <div class="record">
+                <div class="record-title">Falha ao carregar o Globo</div>
+                <div class="record-meta">${esc(error.message)}</div>
+            </div>
+        `;
+
+        const loading = document.getElementById("globe-loading");
+
+        if (loading) {
+            loading.innerHTML = `
+                <div class="loading-title">GLOBO INDISPONÍVEL</div>
+                <div class="loading-text">${esc(error.message)}</div>
+            `;
+        }
+    }
+}
+
+loadGlobeData();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colmeia — Batedores</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0f14;color:#e8edf3;font-family:Arial,Helvetica,sans-serif}
+header{padding:22px 28px;border-bottom:1px solid #202833;background:#10151c}
+h1{margin:0;font-size:24px}
+.sub{margin-top:6px;color:#8e9aaa;font-size:13px}
+main{padding:28px;max-width:1200px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.back{border:1px solid #303b48;background:#151c24;color:#dce4ed;padding:9px 14px;border-radius:6px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.card{background:#111821;border:1px solid #27313d;border-radius:10px;padding:20px}
+.label{font-size:11px;color:#7f8b9a;text-transform:uppercase;letter-spacing:.08em}
+.value{margin-top:7px;font-size:17px}
+.online{color:#65d391}
+.meta{margin-top:18px;padding-top:15px;border-top:1px solid #252e39}
+.row{display:flex;justify-content:space-between;gap:20px;padding:8px 0;border-bottom:1px solid #1d252f;font-size:13px}
+.row:last-child{border-bottom:0}
+.row span:first-child{color:#8793a1}
+.empty,.error{padding:25px;border:1px solid #303b48;background:#111821;border-radius:10px;color:#aab4c0}
+</style>
+</head>
+<body>
+<header>
+  <h1>COLMEIA — BATEDORES</h1>
+  <div class="sub">Dados operacionais reais registrados no Core</div>
+</header>
+
+<main>
+  <div class="top">
+    <div>
+      <div class="label">Batedores registrados</div>
+      <div class="value" id="count">Consultando...</div>
+    </div>
+    <button class="back" onclick="window.location.href='/panel'">← Voltar à Colmeia</button>
+  </div>
+
+  <div id="content"></div>
+</main>
+
+<script>
+async function carregar() {
+  const content = document.getElementById("content");
+  const count = document.getElementById("count");
+
+  try {
+    const r = await fetch("/panel/batedores", {cache:"no-store"});
+    const data = await r.json();
+
+    if (data.status !== "OK") {
+      throw new Error(data.error || "Falha ao consultar Batedores");
+    }
+
+    count.textContent = data.count;
+
+    if (!data.batedores.length) {
+      content.innerHTML = '<div class="empty">Nenhuma Batedora registrada nesta Colmeia.</div>';
+      return;
+    }
+
+    content.innerHTML = '<div class="grid">' + data.batedores.map(b => `
+      <section class="card">
+        <div class="label">Batedora</div>
+        <div class="value">${b.name}</div>
+
+        <div class="meta">
+          <div class="row"><span>Papel</span><span>${b.role}</span></div>
+          <div class="row"><span>Ciclo de vida</span><span>${b.lifecycle}</span></div>
+          <div class="row"><span>Status</span><span class="${b.status === "ONLINE" ? "online" : ""}">${b.status}</span></div>
+          <div class="row"><span>Worker</span><span>${b.metadata?.worker_id ?? "—"}</span></div>
+          <div class="row"><span>Máquina</span><span>${b.metadata?.machine ?? "—"}</span></div>
+          <div class="row"><span>Hostname</span><span>${b.metadata?.hostname ?? "—"}</span></div>
+          <div class="row"><span>IP</span><span>${b.metadata?.ip ?? "—"}</span></div>
+          <div class="row"><span>Porta</span><span>${b.metadata?.port ?? "—"}</span></div>
+          <div class="row"><span>Último sinal</span><span>${b.last_seen_at ?? "—"}</span></div>
+        </div>
+      </section>
+    `).join("") + '</div>';
+
+  } catch (e) {
+    count.textContent = "ERRO";
+    content.innerHTML = '<div class="error">Falha real ao consultar o backend: ' + e.message + '</div>';
+  }
+}
+
+carregar();
+setInterval(carregar, 5000);
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COLMEIA — EVENTOS</title>
+<style>
+body{margin:0;background:#0b0f14;color:#e8edf3;font-family:Arial,sans-serif}
+header{padding:24px 32px;border-bottom:1px solid #26313d}
+h1{margin:0 0 6px;font-size:26px}
+.sub{color:#8d9aaa}
+main{padding:28px 32px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.count{font-size:28px;font-weight:bold}
+button{background:#18222d;color:#e8edf3;border:1px solid #344454;border-radius:8px;padding:10px 16px;cursor:pointer}
+.event{background:#111821;border:1px solid #263442;border-radius:12px;padding:18px;margin-bottom:14px}
+.head{display:flex;justify-content:space-between;gap:20px;align-items:center}
+.type{font-size:17px;font-weight:bold}
+.severity{font-size:12px;padding:5px 9px;border-radius:6px;background:#18222d}
+.message{margin:12px 0;color:#c5ced8}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;color:#8d9aaa;font-size:13px}
+.label{color:#647487;text-transform:uppercase;font-size:10px}
+.data{margin-top:14px;background:#0a0e13;border:1px solid #202b36;border-radius:8px;padding:12px;color:#aeb9c5;font-family:monospace;font-size:12px;white-space:pre-wrap;overflow:auto}
+.empty{border:1px dashed #344454;border-radius:12px;padding:50px;text-align:center;color:#8d9aaa}
+</style>
+</head>
+<body>
+<header>
+<h1>COLMEIA — EVENTOS</h1>
+<div class="sub">Registro operacional real da Colmeia</div>
+</header>
+<main>
+<div class="top">
+<div>
+<div class="label">Eventos registrados</div>
+<div class="count" id="count">0</div>
+</div>
+<button type="button" onclick="window.location.href='/panel'">← Voltar à Colmeia</button>
+</div>
+
+<div id="content"></div>
+</main>
+
+<script>
+async function carregar(){
+    const content=document.getElementById('content');
+
+    try{
+        const r=await fetch('/panel/eventos');
+        const data=await r.json();
+
+        document.getElementById('count').textContent=data.count ?? 0;
+
+        if(!data.eventos || data.eventos.length===0){
+            content.innerHTML='<div class="empty">Nenhum evento registrado pela Colmeia.</div>';
+            return;
+        }
+
+        content.innerHTML=data.eventos.map(e=>`
+            <div class="event">
+                <div class="head">
+                    <div class="type">${e.event_type}</div>
+                    <div class="severity">${e.severity}</div>
+                </div>
+
+                <div class="message">${e.message}</div>
+
+                <div class="meta">
+                    <div><span class="label">ID</span><br>${e.id}</div>
+                    <div><span class="label">Data / Hora</span><br>${e.created_at}</div>
+                    <div><span class="label">Missão</span><br>${e.mission_id ?? 'Não vinculada'}</div>
+                    <div><span class="label">Agente</span><br>${e.agent_id ?? 'Não vinculado'}</div>
+                </div>
+
+                <div class="data">${JSON.stringify(e.data,null,2)}</div>
+            </div>
+        `).join('');
+
+    }catch(e){
+        content.innerHTML='<div class="empty">Falha ao consultar os eventos reais do Core.</div>';
+    }
+}
+
+carregar();
+setInterval(carregar,5000);
+</script>
+</body>
+</html>

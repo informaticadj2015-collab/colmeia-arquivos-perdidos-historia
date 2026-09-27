@@ -1,0 +1,37 @@
+# Ambientes Python
+.venv/
+backend/.venv/
+**/.venv/
+
+# Cache Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Segredos e configuração local
+config/*.secret
+.env
+.env.*
+*.secret
+
+# Bancos e dados operacionais
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Backups locais
+*.bak
+*.bak-*
+
+# Dados temporários
+*.tmp
+*.swp
+.DS_Store
+
+# Configuração local da máquina
+config/

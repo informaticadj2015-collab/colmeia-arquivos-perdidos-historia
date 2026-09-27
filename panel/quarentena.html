@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COLMEIA — QUARENTENA</title>
+<style>
+body{margin:0;background:#071018;color:#dce7ee;font-family:Arial,sans-serif}
+header{padding:24px;border-bottom:1px solid #1d303c;background:#0b151d}
+h1{margin:0 0 6px;font-size:24px}
+.sub{color:#8297a5}
+main{padding:24px;max-width:1200px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.count{font-size:28px;font-weight:bold}
+button{background:#142530;color:#dce7ee;border:1px solid #29404d;padding:10px 16px;border-radius:6px;cursor:pointer}
+.empty,.error{padding:28px;border:1px solid #263b47;background:#0c1820;border-radius:8px;text-align:center;color:#8fa4b0}
+.card{border:1px solid #263b47;background:#0c1820;border-radius:8px;padding:18px;margin-bottom:14px}
+.head{display:flex;justify-content:space-between;margin-bottom:12px}
+.reason{font-size:17px;font-weight:bold}
+.status{font-size:12px;text-transform:uppercase}
+.meta{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;color:#91a5b0;font-size:13px}
+.label{color:#5f7785}
+.evidence{margin-top:14px;background:#071018;padding:12px;white-space:pre-wrap;overflow:auto;font-size:12px;color:#9eb3bf}
+@media(max-width:700px){.meta{grid-template-columns:1fr}.top{align-items:flex-start;gap:15px;flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+<h1>COLMEIA — QUARENTENA</h1>
+<div class="sub">Registros reais mantidos sob análise da Colmeia</div>
+</header>
+
+<main>
+<div class="top">
+<div>
+<div class="count" id="count">—</div>
+<div class="sub">Registros em quarentena</div>
+</div>
+<button type="button" onclick="window.location.href='/panel'">← Voltar ao painel</button>
+</div>
+
+<div id="content">Consultando a Quarentena real...</div>
+</main>
+
+<script>
+async function carregar(){
+    const content=document.getElementById('content');
+    const count=document.getElementById('count');
+
+    try{
+        const r=await fetch('/panel/quarentena');
+        if(!r.ok) throw new Error('HTTP '+r.status);
+
+        const data=await r.json();
+        count.textContent=data.count;
+
+        if(!data.quarentena || data.quarentena.length===0){
+            content.innerHTML='<div class="empty">Nenhum registro em quarentena. A tabela real está vazia.</div>';
+            return;
+        }
+
+        content.innerHTML=data.quarentena.map(q=>`
+            <div class="card">
+                <div class="head">
+                    <div class="reason">${q.reason}</div>
+                    <div class="status">${q.released ? 'LIBERADO' : 'PENDENTE'}</div>
+                </div>
+
+                <div class="meta">
+                    <div><span class="label">ID</span><br>${q.id}</div>
+                    <div><span class="label">Criado em</span><br>${q.created_at}</div>
+                    <div><span class="label">Missão</span><br>${q.mission_id ?? 'Não vinculada'}</div>
+                    <div><span class="label">Agente</span><br>${q.agent_id ?? 'Não vinculado'}</div>
+                </div>
+
+                <div class="evidence">${JSON.stringify(q.evidence,null,2)}</div>
+            </div>
+        `).join('');
+
+    }catch(e){
+        content.innerHTML='<div class="error">Falha ao consultar a Quarentena real do Core.</div>';
+    }
+}
+
+carregar();
+setInterval(carregar,5000);
+</script>
+</body>
+</html>

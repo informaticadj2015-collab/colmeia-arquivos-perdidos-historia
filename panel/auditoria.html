@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COLMEIA — AUDITORIA</title>
+<style>
+body{margin:0;background:#080b10;color:#e8edf5;font-family:Arial,sans-serif}
+header{padding:22px 28px;border-bottom:1px solid #202733;background:#0d1118}
+h1{margin:0;font-size:24px;letter-spacing:1px}
+.sub{color:#8d98a8;margin-top:6px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:15px}
+button{background:#151c26;color:#e8edf5;border:1px solid #303b4b;border-radius:7px;padding:10px 15px;cursor:pointer}
+button:hover{background:#1c2633}
+main{padding:24px 28px;max-width:1200px;margin:auto}
+.status{border:1px solid #273141;background:#0d1219;border-radius:10px;padding:16px;margin-bottom:20px}
+.count{font-size:28px;font-weight:bold}
+.label{color:#8d98a8;font-size:12px;text-transform:uppercase;letter-spacing:1px}
+.card{border:1px solid #252e3b;background:#0d1219;border-radius:10px;padding:17px;margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px 24px;margin-bottom:10px}
+.item b{color:#8d98a8;font-size:11px;text-transform:uppercase}
+.item div{margin-top:4px}
+.action{font-weight:bold;color:#dbe6f5}
+.details{margin-top:12px;background:#080b10;border-radius:7px;padding:10px;white-space:pre-wrap;overflow:auto;color:#aeb9c8;font-size:12px}
+.empty,.error{text-align:center;padding:40px;color:#8d98a8;border:1px dashed #303947;border-radius:10px}
+.error{color:#d88}
+</style>
+</head>
+<body>
+<header>
+<div class="top">
+<div>
+<h1>COLMEIA — AUDITORIA</h1>
+<div class="sub">Registro real das ações e decisões da Colmeia</div>
+</div>
+<button onclick="window.location.href='/panel'">← Voltar</button>
+</div>
+</header>
+
+<main>
+<div class="status">
+<div class="label">Registros reais</div>
+<div class="count" id="count">0</div>
+</div>
+
+<div id="lista">Carregando auditoria real...</div>
+</main>
+
+<script>
+async function carregar(){
+    const lista=document.getElementById("lista");
+    try{
+        const r=await fetch("/panel/auditoria",{cache:"no-store"});
+        if(!r.ok) throw new Error("HTTP "+r.status);
+        const data=await r.json();
+
+        document.getElementById("count").textContent=data.count ?? 0;
+
+        if(!data.auditoria || data.auditoria.length===0){
+            lista.innerHTML='<div class="empty">Nenhum registro real de auditoria encontrado.</div>';
+            return;
+        }
+
+        lista.innerHTML=data.auditoria.map(a=>`
+            <div class="card">
+                <div class="row">
+                    <div class="item"><b>ID</b><div>${a.id}</div></div>
+                    <div class="item"><b>Ator</b><div>${a.actor_type ?? "—"}</div></div>
+                    <div class="item"><b>Ação</b><div class="action">${a.action ?? "—"}</div></div>
+                    <div class="item"><b>Alvo</b><div>${a.target_type ?? "—"}</div></div>
+                    <div class="item"><b>Resultado</b><div>${a.result ?? "—"}</div></div>
+                </div>
+                <div class="row">
+                    <div class="item"><b>Actor ID</b><div>${a.actor_id ?? "—"}</div></div>
+                    <div class="item"><b>Target ID</b><div>${a.target_id ?? "—"}</div></div>
+                    <div class="item"><b>Data</b><div>${a.created_at ?? "—"}</div></div>
+                </div>
+                <div class="details">${JSON.stringify(a.details ?? {}, null, 2)}</div>
+            </div>
+        `).join("");
+    }catch(e){
+        lista.innerHTML='<div class="error">Falha ao carregar a auditoria real: '+e.message+'</div>';
+    }
+}
+carregar();
+setInterval(carregar,5000);
+</script>
+</body>
+</html>

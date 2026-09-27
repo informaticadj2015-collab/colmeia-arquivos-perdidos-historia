@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COLMEIA — ARQUIVOS</title>
+<style>
+body{margin:0;background:#0b0f14;color:#e8edf3;font-family:Arial,sans-serif}
+header{padding:24px 32px;border-bottom:1px solid #26313d}
+h1{margin:0 0 6px;font-size:26px}
+.sub{color:#8d9aaa}
+main{padding:28px 32px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.count{font-size:28px;font-weight:bold}
+button{background:#18222d;color:#e8edf3;border:1px solid #344454;border-radius:8px;padding:10px 16px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.card{background:#111821;border:1px solid #263442;border-radius:12px;padding:20px}
+.card h2{font-size:18px;margin:0 0 14px}
+.row{margin:8px 0;color:#b7c1cc}
+.label{color:#718092;font-size:12px;text-transform:uppercase}
+.empty{border:1px dashed #344454;border-radius:12px;padding:50px;text-align:center;color:#8d9aaa}
+.status{display:inline-block;margin-top:12px;padding:5px 9px;border-radius:6px;background:#17251d;color:#8fd19e}
+</style>
+</head>
+<body>
+<header>
+<h1>COLMEIA — ARQUIVOS</h1>
+<div class="sub">Descobertas e registros históricos efetivamente armazenados no Core</div>
+</header>
+<main>
+<div class="top">
+<div>
+<div class="label">Registros encontrados</div>
+<div class="count" id="count">0</div>
+</div>
+<button type="button" onclick="window.location.href='/panel'">← Voltar à Colmeia</button>
+</div>
+
+<div id="content"></div>
+</main>
+
+<script>
+async function carregar(){
+    const content=document.getElementById('content');
+    try{
+        const r=await fetch('/panel/arquivos');
+        const data=await r.json();
+
+        document.getElementById('count').textContent=data.count ?? 0;
+
+        if(!data.arquivos || data.arquivos.length===0){
+            content.innerHTML='<div class="empty">Nenhum arquivo ou descoberta foi registrado pela Colmeia ainda.<br><span class="status">ESTADO REAL — ZERO REGISTROS</span></div>';
+            return;
+        }
+
+        content.innerHTML='<div class="grid">'+data.arquivos.map(a=>`
+            <div class="card">
+                <h2>${a.title ?? 'Sem título'}</h2>
+                <div class="row"><span class="label">Descrição</span><br>${a.description ?? 'Não informada'}</div>
+                <div class="row"><span class="label">Evidência</span><br>${a.evidence ?? 'DESCONHECIDO'}</div>
+                <div class="row"><span class="label">Direitos</span><br>${a.rights ?? 'DESCONHECIDO'}</div>
+                <div class="row"><span class="label">Fonte</span><br>${a.source_name ?? 'Não informada'}</div>
+                <div class="row"><span class="label">Autor</span><br>${a.author ?? 'Não informado'}</div>
+                <div class="row"><span class="label">Data do documento</span><br>${a.document_date ?? 'Não informada'}</div>
+                <div class="row"><span class="label">Licença</span><br>${a.license_name ?? 'Não informada'}</div>
+                <div class="row"><span class="label">Atribuição obrigatória</span><br>${a.attribution_required === true ? 'SIM' : a.attribution_required === false ? 'NÃO' : 'DESCONHECIDO'}</div>
+                <div class="row"><span class="label">Termos de uso</span><br>${a.usage_terms ?? 'Não informados'}</div>
+                <div class="row"><span class="label">Fonte original</span><br>${a.source_url ? `<a href="${a.source_url}" target="_blank" rel="noopener noreferrer" style="color:#8ab4f8">Abrir registro da fonte</a>` : 'Não informada'}</div>
+                <div class="row"><span class="label">Licença</span><br>${a.license_url ? `<a href="${a.license_url}" target="_blank" rel="noopener noreferrer" style="color:#8ab4f8">Abrir licença</a>` : 'Não informada'}</div>
+                <div class="row"><span class="label">Mídia original</span><br>${a.media_url ? `<a href="${a.media_url}" target="_blank" rel="noopener noreferrer" style="color:#8ab4f8">Abrir imagem original</a>` : 'Não disponível'}</div>
+                <div class="row"><span class="label">Quarentena</span><br>${a.quarantined ? 'SIM' : 'NÃO'}</div>
+            </div>
+        `).join('')+'</div>';
+    }catch(e){
+        content.innerHTML='<div class="empty">Falha ao consultar os arquivos reais do Core.</div>';
+    }
+}
+
+carregar();
+setInterval(carregar,5000);
+</script>
+</body>
+</html>

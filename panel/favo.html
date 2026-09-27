@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COLMEIA — Favo Real</title>
+<style>
+:root{
+    --bg:#071016;
+    --panel:#0d171e;
+    --panel2:#101d25;
+    --line:#21333d;
+    --text:#e7f0f4;
+    --muted:#8ea4ae;
+    --accent:#f4b942;
+    --ok:#49d17d;
+    --warn:#f0a83a;
+    --danger:#e05d5d;
+}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{display:flex;flex-direction:column}
+.topbar{height:68px;min-height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#09131a;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:13px}
+.brand-mark{width:38px;height:38px;display:grid;place-items:center;border:1px solid #5d4b25;background:#17180f;border-radius:9px;font-size:21px}
+.brand-title{font-weight:800;letter-spacing:1.5px;font-size:15px}
+.brand-subtitle{color:var(--muted);font-size:11px;margin-top:2px;letter-spacing:.7px}
+.top-status{display:flex;align-items:center;gap:18px}
+.status-live{display:flex;align-items:center;gap:8px;color:var(--ok);font-size:12px;font-weight:700;letter-spacing:.8px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px rgba(73,209,125,.55)}
+.back{color:var(--muted);text-decoration:none;font-size:12px;border:1px solid var(--line);padding:8px 12px;border-radius:7px}
+.back:hover{color:var(--text);border-color:#3b5662}
+.workspace{flex:1;min-height:0;display:grid;grid-template-columns:350px minmax(0,1fr)}
+.sidebar{min-height:0;overflow:auto;border-right:1px solid var(--line);background:var(--panel);padding:18px}
+.section-title{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:1.4px;margin:2px 0 12px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}
+.metric{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px}
+.metric-label{color:var(--muted);font-size:10px;letter-spacing:.6px}
+.metric-value{margin-top:5px;font-size:22px;font-weight:800}
+.filters{display:grid;gap:8px;margin-bottom:18px}
+select,input{width:100%;background:#0a141b;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:9px 10px;font:inherit;font-size:12px;outline:none}
+select:focus,input:focus{border-color:#536d79}
+.records{display:flex;flex-direction:column;gap:8px}
+.record{border:1px solid var(--line);background:#0b151c;border-radius:8px;padding:11px;cursor:pointer}
+.record:hover{border-color:#405963;background:#0e1a21}
+.record.active{border-color:#806525;box-shadow:inset 3px 0 0 var(--accent)}
+.record-title{font-size:12px;font-weight:700;line-height:1.35}
+.record-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.badge{font-size:9px;letter-spacing:.5px;border:1px solid var(--line);border-radius:5px;padding:3px 6px;color:var(--muted)}
+.badge.ok{color:var(--ok);border-color:#285b43}
+.badge.warn{color:var(--warn);border-color:#684b20}
+.badge.danger{color:var(--danger);border-color:#633535}
+.main{min-width:0;min-height:0;display:flex;flex-direction:column;background:#081219}
+.main-head{height:74px;min-height:74px;padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.main-title{font-size:14px;font-weight:800;letter-spacing:1px}
+.main-sub{color:var(--muted);font-size:11px;margin-top:4px}
+.content{min-height:0;overflow:auto;padding:22px}
+.empty{height:100%;display:grid;place-items:center;color:var(--muted);font-size:13px}
+.detail{max-width:1000px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.detail-card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:15px}
+.detail-label{font-size:10px;color:var(--muted);letter-spacing:1px;font-weight:800;margin-bottom:7px}
+.detail-value{font-size:13px;line-height:1.45;word-break:break-word}
+.detail-title{font-size:19px;font-weight:800;line-height:1.35;margin-bottom:18px}
+.provenance{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.prov-item{background:#0b151c;border:1px solid var(--line);border-radius:7px;padding:11px}
+.prov-label{font-size:9px;color:var(--muted);letter-spacing:.8px}
+.prov-value{font-size:12px;font-weight:700;margin-top:5px}
+.source-link{color:var(--accent);text-decoration:none}
+.source-link:hover{text-decoration:underline}
+.media{margin-top:16px;border:1px solid var(--line);border-radius:9px;background:#0b151c;padding:12px}
+.media img{display:block;max-width:100%;max-height:420px;margin:auto;border-radius:6px}
+.notice{padding:11px 13px;border:1px solid #684b20;background:#15130d;border-radius:8px;color:#f0c66d;font-size:11px;margin-bottom:18px}
+@media(max-width:900px){
+    .workspace{grid-template-columns:290px minmax(0,1fr)}
+    .detail-grid{grid-template-columns:1fr}
+    .provenance{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-mark">🐝</div>
+        <div>
+            <div class="brand-title">COLMEIA / FAVO REAL</div>
+            <div class="brand-subtitle">ARQUIVO • CATALOGAÇÃO • PROVENIÊNCIA</div>
+        </div>
+    </div>
+    <div class="top-status">
+        <div class="status-live"><span class="status-dot"></span> DADOS REAIS</div>
+        <a class="back" href="/panel">← Central</a>
+    </div>
+</header>
+
+<div class="workspace">
+    <aside class="sidebar">
+        <div class="section-title">ESTADO DO FAVO</div>
+        <div class="metrics">
+            <div class="metric"><div class="metric-label">TOTAL</div><div class="metric-value" id="m-total">—</div></div>
+            <div class="metric"><div class="metric-label">ÚNICOS</div><div class="metric-value" id="m-unicos">—</div></div>
+            <div class="metric"><div class="metric-label">PRINCIPAIS</div><div class="metric-value" id="m-principais">—</div></div>
+            <div class="metric"><div class="metric-label">DUPLICADOS</div><div class="metric-value" id="m-duplicados">—</div></div>
+            <div class="metric"><div class="metric-label">DOM. PÚBLICO</div><div class="metric-value" id="m-publico">—</div></div>
+            <div class="metric"><div class="metric-label">LIC. CONDICIONAL</div><div class="metric-value" id="m-condicional">—</div></div>
+            <div class="metric"><div class="metric-label">DESCONHECIDO</div><div class="metric-value" id="m-desconhecido">—</div></div>
+        </div>
+
+        <div class="section-title">FILTROS</div>
+        <div class="filters">
+            <input id="search" type="search" placeholder="Pesquisar título ou fonte...">
+            <select id="duplicateFilter">
+                <option value="">Todas as duplicidades</option>
+                <option value="UNICO">Únicos</option>
+                <option value="PRINCIPAL">Principais</option>
+                <option value="DUPLICADO_CONFIRMADO">Duplicados confirmados</option>
+            </select>
+            <select id="rightsFilter">
+                <option value="">Todos os direitos</option>
+                <option value="DOMINIO_PUBLICO">Domínio público</option>
+                <option value="LICENCA_CONDICIONAL">Licença condicional</option>
+                <option value="DESCONHECIDO">Desconhecido</option>
+            </select>
+        </div>
+
+        
+        <div class="section-title" style="margin-top:18px">BIBLIOTECÁRIA</div>
+        <div class="metric" id="bibliotecaria">
+            <div class="metric-label">PENDÊNCIAS REAIS</div>
+            <div class="metric-value" id="m-pendentes">—</div>
+            <button id="btn-pendentes" style="margin-top:10px;width:100%;background:#17180f;color:var(--accent);border:1px solid #806525;border-radius:7px;padding:9px;font-weight:800;cursor:pointer">
+                ABRIR FILA DE CATALOGAÇÃO
+            </button>
+        </div>
+
+<div class="section-title">REGISTROS</div>
+        <div class="records" id="records"></div>
+    </aside>
+
+    <main class="main">
+        <div class="main-head">
+            <div>
+                <div class="main-title">FAVO / REGISTRO SELECIONADO</div>
+                <div class="main-sub" id="count-label">Carregando dados reais...</div>
+            </div>
+        </div>
+        <div class="content" id="content">
+            <div class="empty">Carregando Favo...</div>
+        </div>
+    </main>
+</div>
+
+<script>
+let state = {items:[], selected:null};
+
+const esc = value => String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+function rightsBadge(rights){
+    if(rights === "DOMINIO_PUBLICO") return '<span class="badge ok">DOMÍNIO PÚBLICO</span>';
+    if(rights === "LICENCA_CONDICIONAL") return '<span class="badge warn">LICENÇA CONDICIONAL</span>';
+    if(rights === "DESCONHECIDO") return '<span class="badge danger">DIREITO DESCONHECIDO</span>';
+    return `<span class="badge">${esc(rights || "NÃO INFORMADO")}</span>`;
+}
+
+function duplicateBadge(role){
+    if(role === "UNICO") return '<span class="badge ok">ÚNICO</span>';
+    if(role === "PRINCIPAL") return '<span class="badge">PRINCIPAL</span>';
+    if(role === "DUPLICADO_CONFIRMADO") return '<span class="badge warn">DUPLICADO</span>';
+    return `<span class="badge">${esc(role || "NÃO CLASSIFICADO")}</span>`;
+}
+
+function renderMetrics(summary){
+    document.getElementById("m-total").textContent = summary.total ?? "—";
+    document.getElementById("m-unicos").textContent = summary.unicos ?? "—";
+    document.getElementById("m-principais").textContent = summary.principais ?? "—";
+    document.getElementById("m-duplicados").textContent = summary.duplicados ?? "—";
+    document.getElementById("m-publico").textContent = summary.dominio_publico ?? "—";
+    document.getElementById("m-condicional").textContent = summary.licenca_condicional ?? "—";
+    document.getElementById("m-desconhecido").textContent = summary.desconhecido ?? "—";
+}
+
+function filteredItems(){
+    const q = document.getElementById("search").value.trim().toLowerCase();
+    const dup = document.getElementById("duplicateFilter").value;
+    const rights = document.getElementById("rightsFilter").value;
+
+    return state.items.filter(item => {
+        const text = `${item.title || ""} ${item.source_name || ""}`.toLowerCase();
+        return (!q || text.includes(q))
+            && (!dup || item.duplicate_role === dup)
+            && (!rights || item.rights === rights);
+    });
+}
+
+function renderRecords(){
+    const list = document.getElementById("records");
+    const items = filteredItems();
+    document.getElementById("count-label").textContent = `${items.length} registro(s) exibido(s) de ${state.items.length} catalogado(s).`;
+
+    if(!items.length){
+        list.innerHTML = '<div class="empty" style="height:120px">Nenhum registro corresponde aos filtros.</div>';
+        return;
+    }
+
+    list.innerHTML = items.map(item => `
+        <div class="record ${state.selected === item.id ? "active" : ""}" data-id="${esc(item.id)}">
+            <div class="record-title">${esc(item.title)}</div>
+            <div class="record-meta">
+                ${duplicateBadge(item.duplicate_role)}
+                ${rightsBadge(item.rights)}
+            </div>
+        </div>
+    `).join("");
+
+    list.querySelectorAll(".record").forEach(el => {
+        el.addEventListener("click", () => selectItem(el.dataset.id));
+    });
+}
+
+function detailField(label, value){
+    return `
+        <div class="detail-card">
+            <div class="detail-label">${esc(label)}</div>
+            <div class="detail-value">${esc(value || "NÃO INFORMADO")}</div>
+        </div>
+    `;
+}
+
+function renderDetail(){
+    const content = document.getElementById("content");
+    const item = state.items.find(x => x.id === state.selected);
+
+    if(!item){
+        content.innerHTML = '<div class="empty">Selecione um registro do Favo.</div>';
+        return;
+    }
+
+    const warning = item.rights === "DESCONHECIDO"
+        ? '<div class="notice">DIREITOS DESCONHECIDOS: este registro não deve ser tratado como livre para uso. A incerteza permanece registrada.</div>'
+        : "";
+
+    const duplicateInfo = item.duplicate_role === "DUPLICADO_CONFIRMADO"
+        ? `<div class="notice">DUPLICATA CONFIRMADA${item.duplicate_of ? " — vinculada ao registro principal " + esc(item.duplicate_of) : ""}.</div>`
+        : "";
+
+    content.innerHTML = `
+        <div class="detail">
+            ${warning}
+            ${duplicateInfo}
+            <div class="detail-title">${esc(item.title)}</div>
+
+            <div class="provenance">
+                <div class="prov-item"><div class="prov-label">ORGANIZAÇÃO</div><div class="prov-value">${esc(item.organization_state)}</div></div>
+                <div class="prov-item"><div class="prov-label">DUPLICIDADE</div><div class="prov-value">${esc(item.duplicate_role)}</div></div>
+                <div class="prov-item"><div class="prov-label">PROVENIÊNCIA</div><div class="prov-value">${esc(item.provenance_state)}</div></div>
+                <div class="prov-item"><div class="prov-label">DIREITOS</div><div class="prov-value">${esc(item.rights)}</div></div>
+                <div class="prov-item"><div class="prov-label">FONTE</div><div class="prov-value">${esc(item.source_name)}</div></div>
+                <div class="prov-item"><div class="prov-label">DATA DO DOCUMENTO</div><div class="prov-value">${esc(item.document_date)}</div></div>
+            </div>
+
+            <div class="detail-grid" style="margin-top:18px">
+                ${detailField("AUTOR", item.author)}
+                ${detailField("LICENÇA", item.license_name)}
+                ${detailField("COLEÇÃO", item.collection_key)}
+                ${detailField("CLASSIFICAÇÃO", item.classification)}
+                ${detailField("ATRIBUIÇÃO EXIGIDA", item.attribution_required ? "SIM" : "NÃO")}
+                ${detailField("ID DA DESCOBERTA", item.discovery_id)}
+            </div>
+
+            <div class="detail-card">
+                <div class="detail-label">DESCRIÇÃO / EVIDÊNCIA</div>
+                <div class="detail-value">${esc(item.description || item.evidence || "NÃO INFORMADO")}</div>
+            </div>
+
+            <div class="detail-card" style="margin-top:12px">
+                <div class="detail-label">PROVENIÊNCIA / FONTE ORIGINAL</div>
+                <div class="detail-value">
+                    ${item.source_url ? `<a class="source-link" href="${esc(item.source_url)}" target="_blank" rel="noopener noreferrer">${esc(item.source_url)}</a>` : "NÃO INFORMADA"}
+                </div>
+            </div>
+
+            ${item.license_url ? `
+            <div class="detail-card" style="margin-top:12px">
+                <div class="detail-label">URL DA LICENÇA</div>
+                <div class="detail-value">
+                    <a class="source-link" href="${esc(item.license_url)}" target="_blank" rel="noopener noreferrer">${esc(item.license_url)}</a>
+                </div>
+            </div>` : ""}
+
+            ${item.media_url ? `
+            <div class="media">
+                <div class="detail-label">MÍDIA ORIGINAL</div>
+                <img src="${esc(item.media_url)}" alt="Mídia do registro" loading="lazy" onerror="this.parentElement.style.display='none'">
+            </div>` : ""}
+        </div>
+    `;
+}
+
+function selectItem(id){
+    state.selected = id;
+    renderRecords();
+    renderDetail();
+}
+
+
+async function loadPending(){
+    try{
+        const response = await fetch("/favo/pending", {cache:"no-store"});
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+
+        if(data.status !== "OK"){
+            throw new Error(data.error || "Resposta inválida da fila.");
+        }
+
+        document.getElementById("m-pendentes").textContent = data.total ?? "—";
+
+        window.__bibliotecariaPending = Array.isArray(data.items)
+            ? data.items
+            : [];
+
+    }catch(error){
+        document.getElementById("m-pendentes").textContent = "ERRO";
+        console.error("Bibliotecária:", error);
+    }
+}
+
+function showPending(){
+    const items = window.__bibliotecariaPending || [];
+    const content = document.getElementById("content");
+
+    if(!items.length){
+        content.innerHTML = '<div class="empty">NÃO HÁ DESCOBERTAS PENDENTES DE CATALOGAÇÃO.</div>';
+        document.getElementById("count-label").textContent = "Fila da Bibliotecária vazia.";
+        return;
+    }
+
+    document.getElementById("count-label").textContent =
+        `${items.length} descoberta(s) aguardando catalogação real.`;
+
+    content.innerHTML = `
+        <div class="detail">
+            <div class="detail-title">BIBLIOTECÁRIA / FILA DE CATALOGAÇÃO</div>
+
+            <div class="notice">
+                Estas são descobertas reais que ainda não possuem registro no Favo.
+                A catalogação será gravada no banco, com proveniência, duplicidade,
+                auditoria e evento operacional.
+            </div>
+
+            ${items.map(item => `
+                <div class="detail-card" style="margin-bottom:12px">
+                    <div class="detail-title" style="font-size:15px;margin-bottom:10px">
+                        ${esc(item.title)}
+                    </div>
+
+                    <div class="provenance">
+                        <div class="prov-item">
+                            <div class="prov-label">FONTE</div>
+                            <div class="prov-value">${esc(item.source_name)}</div>
+                        </div>
+
+                        <div class="prov-item">
+                            <div class="prov-label">DIREITOS</div>
+                            <div class="prov-value">${esc(item.rights)}</div>
+                        </div>
+
+                        <div class="prov-item">
+                            <div class="prov-label">AUTOR</div>
+                            <div class="prov-value">${esc(item.author)}</div>
+                        </div>
+
+                        <div class="prov-item">
+                            <div class="prov-label">LICENÇA</div>
+                            <div class="prov-value">${esc(item.license_name)}</div>
+                        </div>
+
+                        <div class="prov-item">
+                            <div class="prov-label">DATA</div>
+                            <div class="prov-value">${esc(item.document_date)}</div>
+                        </div>
+
+                        <div class="prov-item">
+                            <div class="prov-label">COORDENADAS</div>
+                            <div class="prov-value">
+                                ${item.latitude != null && item.longitude != null
+                                    ? `${esc(item.latitude)}, ${esc(item.longitude)}`
+                                    : "NÃO INFORMADAS"}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                        <a class="back" href="${esc(item.source_url)}" target="_blank" rel="noopener noreferrer">
+                            ABRIR FONTE
+                        </a>
+
+                        <button
+                            data-catalog-id="${esc(item.discovery_id)}"
+                            style="background:#17180f;color:var(--accent);border:1px solid #806525;border-radius:7px;padding:8px 12px;font-weight:800;cursor:pointer">
+                            CATALOGAR NO FAVO
+                        </button>
+                    </div>
+                </div>
+            `).join("")}
+        </div>
+    `;
+
+    content.querySelectorAll("[data-catalog-id]").forEach(button => {
+        button.addEventListener("click", () => catalogPending(button.dataset.catalogId, button));
+    });
+}
+
+async function catalogPending(discoveryId, button){
+    button.disabled = true;
+    button.textContent = "CATALOGANDO...";
+
+    try{
+        const response = await fetch(`/favo/catalog/${encodeURIComponent(discoveryId)}`, {
+            method: "POST",
+            cache: "no-store"
+        });
+
+        const data = await response.json();
+
+        if(!response.ok || ![
+            "FAVO_CATALOGUED",
+            "ALREADY_CATALOGUED"
+        ].includes(data.status)){
+            throw new Error(data.error || data.status || `HTTP ${response.status}`);
+        }
+
+        await loadPending();
+        showPending();
+        await load();
+loadPending();
+
+    }catch(error){
+        button.disabled = false;
+        button.textContent = "CATALOGAR NO FAVO";
+        alert(`FALHA NA CATALOGAÇÃO: ${error.message}`);
+    }
+}
+
+async function load(){
+    try{
+        const response = await fetch("/panel/favo", {cache:"no-store"});
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        if(data.status !== "OK") throw new Error("Resposta inválida do backend.");
+
+        state.items = Array.isArray(data.items) ? data.items : [];
+        renderMetrics(data.summary || {});
+        renderRecords();
+
+        if(!state.selected && state.items.length){
+            state.selected = state.items[0].id;
+        }
+        renderRecords();
+        renderDetail();
+    }catch(error){
+        document.getElementById("content").innerHTML =
+            `<div class="empty">ERRO AO CARREGAR FAVO: ${esc(error.message)}</div>`;
+        document.getElementById("count-label").textContent = "Backend indisponível.";
+    }
+}
+
+document.getElementById("search").addEventListener("input", renderRecords);
+document.getElementById("duplicateFilter").addEventListener("change", renderRecords);
+document.getElementById("rightsFilter").addEventListener("change", renderRecords);
+
+document.getElementById("btn-pendentes").addEventListener("click", showPending);
+
+
+
+load();
+setInterval(load, 10000);
+</script>
+</body>
+</html>
