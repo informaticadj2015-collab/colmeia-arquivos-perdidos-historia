@@ -2,6 +2,8 @@
 
 Infraestrutura local de pesquisa, organização e preservação histórica.
 
+A Colmeia é um projeto desenvolvido no contexto do **Arquivos Perdidos da História**, voltado à pesquisa, organização e preservação de informações e materiais históricos.
+
 A Colmeia está sendo desenvolvida como uma infraestrutura real, com processamento local, banco de dados, comunicação entre máquinas, execução de missões, pesquisa de fontes, rastreabilidade, auditoria e organização de descobertas.
 
 ## Arquitetura atual
@@ -52,4 +54,3 @@ Novas funções serão implementadas progressivamente sem substituir ou mascarar
 - `config/` — configuração local, não versionada.
 - `data/` — dados operacionais, não versionados.
 - `logs/` — registros locais, não versionados.
-
